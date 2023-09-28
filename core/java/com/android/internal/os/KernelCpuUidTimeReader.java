@@ -20,6 +20,7 @@ import static com.android.internal.util.Preconditions.checkNotNull;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.util.IntArray;
@@ -31,6 +32,7 @@ import com.android.internal.os.KernelCpuProcStringReader.ProcFileIterator;
 import com.android.internal.os.KernelCpuUidBpfMapReader.BpfMapIterator;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.CharBuffer;
@@ -280,6 +282,11 @@ public abstract class KernelCpuUidTimeReader<T> {
             removeUidsFromKernelModule(startUid, endUid);
         }
 
+         public boolean fileExists(String fileName) {
+             final File file = new File(fileName);
+            return file.exists();
+         }
+    
         /**
          * Removes UIDs in a given range from the kernel module and internal accounting data. Only
          * {@link BatteryStatsImpl} and its child processes should call this, as the change on
@@ -290,6 +297,7 @@ public abstract class KernelCpuUidTimeReader<T> {
          * @param endUid   the last uid to remove
          */
         private void removeUidsFromKernelModule(int startUid, int endUid) {
+            if (!fileExists(REMOVE_UID_PROC_FILE)) return;
             Slog.d(mTag, "Removing uids " + startUid + "-" + endUid);
             final int oldMask = StrictMode.allowThreadDiskWritesMask();
             try (FileWriter writer = new FileWriter(REMOVE_UID_PROC_FILE)) {
@@ -501,7 +509,11 @@ public abstract class KernelCpuUidTimeReader<T> {
                 CharBuffer buf;
                 while ((buf = iter.nextLine()) != null) {
                     if (asLongs(buf, mBuffer) != mBuffer.length) {
-                        Slog.wtf(mTag, "Invalid line: " + buf.toString());
+                        if (Build.IS_ENG) {
+                            Slog.wtf(mTag, "Invalid line: " + buf.toString());
+                        } else {
+                            Slog.w(mTag, "Invalid line: " + buf.toString());
+                        }
                         continue;
                     }
                     processUidDelta(cb);
