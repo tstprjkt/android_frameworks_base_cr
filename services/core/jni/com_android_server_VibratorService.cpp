@@ -189,7 +189,7 @@ class HalWrapper {
                 break;
             }
 
-            ALOGE("Failed to issue command to vibrator HAL. Retrying.");
+           //ALOGE("Failed to issue command to vibrator HAL. Retrying.");
 
             // Restoring connection to the HAL.
             mHal = tryGetService<I>();
