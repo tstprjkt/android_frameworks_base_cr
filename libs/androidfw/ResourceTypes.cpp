@@ -4397,7 +4397,7 @@ ssize_t ResTable::getResource(uint32_t resID, Res_value* outValue, bool mayBeBag
     // the actual package IDs of the corresponding packages in this ResTable.
     // We need to fix the package ID based on a mapping.
     if (grp->dynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
-        ALOGW("Failed to resolve referenced package: 0x%08x", outValue->data);
+        ALOGV("Failed to resolve referenced package: 0x%08x", outValue->data);
         return BAD_VALUE;
     }
 
